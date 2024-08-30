@@ -2,14 +2,14 @@
 
 #define PWM1 9
 #define PWM2 10
-#define IN1 13
-#define IN2 12
+#define IN1 4
+#define IN2 5
 #define IN3 8
 #define IN4 7
 
 AS5600 as5600;
 int sense = 0;
-float angle;
+float angle1, angle2;
 long previousMillis = 0;
 
 void configMotor (int motor, int direction, float PWM) {
@@ -21,14 +21,6 @@ void configMotor (int motor, int direction, float PWM) {
     digitalWrite(IN3, !direction);
     digitalWrite(IN4, direction);
     analogWrite(PWM2, PWM);
-  }
-}
-
-void littleControl(float value) {
-  if (value < -80) {
-    configMotor(1, 1, 60);
-  } else {
-    configMotor(1, 0, 60);
   }
 }
 
@@ -54,9 +46,9 @@ void loop() {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= 1) {
     previousMillis = currentMillis;
-    angle = map(as5600.getCumulativePosition(), 0, 4095, 0, 360) - 170; // 12 Bits
-    Serial.print("DATA,");
-    Serial.print(angle);
+    //angle2= map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
+    angle1 = 23 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+    Serial.print(angle1);
     Serial.print(",");
     Serial.println(currentMillis);
   }

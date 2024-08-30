@@ -11,7 +11,7 @@ AS5600 as5600;
 
 // Variables para PID
 double kp = 7, kd = 1.308;
-double setpoint = 160;
+double setpoint = 80;
 double input, output;
 double lastError = 0, integral = 0;
 
@@ -33,7 +33,7 @@ void setup() {
 }
 
 void PID() {
-  long pos = map(as5600.getCumulativePosition(), 0, 4095, 0, 360)-20; // 12 Bits
+  long pos = 23 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
   input = pos;
   double error = setpoint - input;
   double Pout = kp * error;
@@ -48,7 +48,8 @@ void PID() {
     digitalWrite(IN2, HIGH);
     output = -output;
   }
-  if (output > 255) output = 255;
+
+  if (output > 255) output = 0;
   if (output < 0) output = 0;
   analogWrite(PWM1, output); // Enviar señal PWM al motor
   lastError = error;
