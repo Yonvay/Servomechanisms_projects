@@ -1,11 +1,11 @@
 #include "AS5600.h"
 
-#define PWM1 9
-#define PWM2 10
-#define IN1 4
-#define IN2 5
-#define IN3 8
-#define IN4 7
+#define PWM1 10
+#define PWM2 11
+#define IN1 8
+#define IN2 9
+#define IN3 12
+#define IN4 13
 
 AS5600 as5600;
 int sense = 0;
@@ -40,15 +40,22 @@ void setup() {
   Serial.println("LABEL,Theta_1,t");
   delay(1000);
 }
-
+double lastPos = -1;
 void loop() {
-  configMotor(1, 0, 110);
+  configMotor(2, 1, 40);
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= 1) {
     previousMillis = currentMillis;
     //angle2= map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
-    angle1 = 23 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+    angle1 = -4-map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+    double pos = map(analogRead(A0), 0, 1023, 0, 360);
+    if (lastPos == 360) pos = 360 + pos;
+    if (lastPos == 0) pos = pos - 360;
+    lastPos = pos;
+    angle2 = -143+map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
     Serial.print(angle1);
+    Serial.print(",");
+    Serial.print(angle2);
     Serial.print(",");
     Serial.println(currentMillis);
   }
