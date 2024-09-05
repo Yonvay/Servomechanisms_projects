@@ -1,17 +1,17 @@
 #include "AS5600.h"
 
-#define PWM1 9
-#define PWM2 10
-#define IN1 13
-#define IN2 12
-#define IN3 8
-#define IN4 7
+#define PWM1 10
+#define PWM2 11
+#define IN1 8
+#define IN2 9
+#define IN3 12
+#define IN4 13
 
 AS5600 as5600;
 
 // Variables para PID
-double kp = 7, kd = 1.308;
-double setpoint = 80;
+double kp = 7, kd = 1.16;
+double setpoint = 90;
 double input, output;
 double lastError = 0, integral = 0;
 
@@ -19,8 +19,6 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   as5600.begin();
-  as5600.resetPosition(0);
-  as5600.setDirection(AS5600_CLOCK_WISE);
   // Config H bridge
   pinMode(PWM1, OUTPUT);
   pinMode(PWM2, OUTPUT);
@@ -33,7 +31,7 @@ void setup() {
 }
 
 void PID() {
-  long pos = 23 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+  long pos = 143 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
   input = pos;
   double error = setpoint - input;
   double Pout = kp * error;
@@ -41,11 +39,11 @@ void PID() {
   double Dout = kd * derivative;
   output = Pout + Dout;
   if (output > 0) {
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-  } else {
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
+  } else {
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
     output = -output;
   }
 
