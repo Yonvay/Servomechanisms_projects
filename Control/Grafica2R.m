@@ -1,6 +1,6 @@
 % Configuración de la comunicación serial
 global s;
-port = 'COM5'; 
+port = 'COM7'; 
 baudRate = 9600; 
 s = serialport(port, baudRate); 
 
@@ -12,8 +12,8 @@ l2 = 20;
 figureHandle = figure('Name', 'Mecanismo 2R Animado', 'NumberTitle', 'off'); % Crear la figura para la gráfica
 hold on;
 axis equal;
-xlim([0 60]);
-ylim([0 60]);
+xlim([0 40]);
+ylim([0 40]);
 grid on;
 title('Mecanismo 2R');
 xlabel('X');
@@ -25,18 +25,19 @@ extreme_points_x = [];
 extreme_points_y = [];
 
 % Crear una nueva figura para los controles de interfaz
-controlFig = figure('Name', 'Control de Valores', 'NumberTitle', 'off', 'Position', [100, 100, 300, 200]);
+controlFig = figure('Name', 'Control de Valores', 'NumberTitle', 'off', 'Position', [100, 100, 300, 250]);
 
+uicontrol('Style', 'text', 'String', 'Petalos (3 - 10):', 'Position', [10, 190, 90, 30], 'Parent', controlFig);
+PetalosInput = uicontrol('Style', 'edit', 'Position', [100, 195, 100, 30], 'Parent', controlFig);
 
-uicontrol('Style', 'text', 'String', 'Escala:', 'Position', [10, 140, 80, 30], 'Parent', controlFig);
+uicontrol('Style', 'text', 'String', 'Escala (1 - 1.33):', 'Position', [10, 140, 90, 30], 'Parent', controlFig);
 EscalaInput = uicontrol('Style', 'edit', 'Position', [100, 145, 100, 30], 'Parent', controlFig);
 
-uicontrol('Style', 'text', 'String', 'Rotación:', 'Position', [10, 90, 80, 30], 'Parent', controlFig);
+uicontrol('Style', 'text', 'String', 'Rotación (°):', 'Position', [10, 90, 90, 30], 'Parent', controlFig);
 RotacionInput = uicontrol('Style', 'edit', 'Position', [100, 95, 100, 30], 'Parent', controlFig);
 
-
 sendButton = uicontrol('Style', 'pushbutton', 'String', 'Iniciar', 'Position', [100, 40, 100, 40], ...
-    'Parent', controlFig, 'Callback', @(src, event) sendJson(EscalaInput, RotacionInput));
+    'Parent', controlFig, 'Callback', @(src, event) sendJson(PetalosInput, EscalaInput, RotacionInput));
 
 isRunning = true; 
 
@@ -86,18 +87,18 @@ while isRunning
 end
 
 % Función de devolución de llamada para enviar JSON
-function sendJson(AInput,BInput)
+function sendJson(AInput,BInput, CInput)
     global s;
-    Escala = str2double(get(AInput, 'String')); 
-    Rotacion = str2double(get(BInput, 'String')); 
+    Petalos = str2double(get(AInput, 'String')); 
+    Escala = str2double(get(BInput, 'String'));
+    Rotacion = str2double(get(CInput, 'String')); 
     
-    
-    if isnan(Escala) || isnan(Rotacion)
-        disp('Error: Por favor ingrese valores numéricos válidos para maxA y maxB.');
+    if isnan(Petalos) || isnan(Escala) || isnan(Rotacion)
+        disp('Error: Por favor ingrese valores numéricos válidos.');
         return;
     end
     
-    jsonString = sprintf('{"ini":1, "Escala":%.2f, "Rotacion":%.2f}', Escala, Rotacion);
+    jsonString = sprintf('{"ini":1, "Petalos":%.2f, "Escala":%.2f, "Rotacion":%.2f}', Petalos, Escala, Rotacion);
     writeline(s, jsonString); % Enviar el JSON por comunicación serial
     disp(['Enviado JSON: ', jsonString]);
 end

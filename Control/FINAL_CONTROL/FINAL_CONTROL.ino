@@ -136,15 +136,13 @@ void loop() {
   } else if (!STOP_UP && digitalRead(RUN) == 1) {
     stepTime = currentMillis - previousMillis;
     if (stepTime >= Dt) {  //Asigna un nuevo punto pasado un tiempo Dt
-      Serial.println(currentStep);
       angles = getAngles(currentStep, currentScale, currentRotation, currentLeafts);
       previousMillis = currentMillis;
-      Serial.println(currentStep);
       currentStep++;
-      if (currentStep == steps + 1) {
+      if (currentStep == steps + 1) {//Termina y se detiene
         STOP_UP = true;
         currentStep = 0;
-      };  //Termina y se detiene
+      };
       Serial.print("Theta_1T: ");
       Serial.print(rad2Deg(angles[0]));
       Serial.print(", Theta_1R: ");
