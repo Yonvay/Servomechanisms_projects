@@ -12,7 +12,7 @@ l2 = 20;
 figureHandle = figure('Name', 'Mecanismo 2R Animado', 'NumberTitle', 'off'); % Crear la figura para la gráfica
 hold on;
 axis equal;
-xlim([0 40]);
+xlim([-40 40]);
 ylim([0 40]);
 grid on;
 title('Mecanismo 2R');

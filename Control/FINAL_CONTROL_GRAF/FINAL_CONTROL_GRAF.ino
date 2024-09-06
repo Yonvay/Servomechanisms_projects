@@ -1,9 +1,6 @@
 #include "AS5600.h"
 #include <ArduinoJson.h>
 #define ENCODER2 A0
-#define STOP 2
-#define HOME 3
-#define RUN 4
 //H Brigde
 #define IN1 12
 #define IN2 13
@@ -42,8 +39,8 @@ void setup() {
   delay(1000);
 }
 
-double offsetAngle1 = 23;
-double offsetAngle2 = -406;
+double offsetAngle1 = 40;
+double offsetAngle2 = -147;
 
 void PID(double setPoint1, double setPoint2) {
   input1 = offsetAngle1 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
@@ -83,7 +80,29 @@ void PID(double setPoint1, double setPoint2) {
   lastError2 = error2;
 }
 
-int steps = 40;
+void PID_SOFT(double setPoint1, double setPoint2) {
+  input1 = offsetAngle1 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+  input2 = offsetAngle2 + map(analogRead(ENCODER2), 0, 1023, 0, 360);// 10 Bits, analog output
+  double error1 = setPoint1 - input1;
+  double error2 = setPoint2 - input2;
+  if (abs(error1) > 5) {
+    if (setPoint1 > input1) {
+      setPoint1 = input1 + 5;
+    } else {
+      setPoint1 = input1 - 5;
+    }
+  }
+  if (abs(error2) > 5) {
+    if (setPoint2 > input2) {
+      setPoint2 = input2 + 5;
+    } else {
+      setPoint2 = input2 - 5;
+    }
+  }
+  PID(setPoint1, setPoint2);
+}
+
+int steps = 60;
 double sizes[8] = {1.46, 1.33, 0.8, 0.56, 0.38, 0.36, 0.3, 0.27};
 double roundness[8] = {5, 7.5, 8.8, 13.8, 19.1, 20, 24.5, 28.2};
 double offsetX = 13;
@@ -106,12 +125,12 @@ double* getAngles (int step, double scale, double rotation, int leafts) {
 }
 
 double rad2Deg(double angle) {
-  return angle * 180.0 / PI;
+  return round(angle * 180.0 / PI);
 }
 
 
 double* angles;
-long Dt = 5000;
+long Dt = 300;
 long previousMillis = 0;
 unsigned long currentMillis, stepTime;
 int currentStep = 0;
@@ -120,7 +139,6 @@ double currentRotation = 0;//Radians
 int currentLeafts = 3;//Leafts > 3
 
 void loop() {
-  currentMillis = millis();
     // Si hay datos disponibles en el puerto serial
   if (Serial.available() > 0) {
     // Lee el JSON completo
@@ -149,36 +167,30 @@ void loop() {
       }
     }
   }
+  currentMillis = millis();
   Inicio = true;
   if (Inicio) {
-    if (digitalRead(STOP) == 1 || STOP_UP) {
-    analogWrite(PWM1, 0);
-    analogWrite(PWM2, 0);
-    Serial.println("PARADA DE EMERGENCIA");
-    STOP_UP = true;
-    }
-    if (!STOP_UP && digitalRead(HOME) == 1) {
-      currentStep = 0;
+    stepTime = currentMillis - previousMillis;
+    if (stepTime >= Dt) {//Asigna un nuevo punto pasado un tiempo Dt
+      Serial.println(currentStep);
       angles = getAngles(currentStep, currentScale, currentRotation, currentLeafts);
-      PID(rad2Deg(angles[0]), rad2Deg(angles[1]));
-    }else if (!STOP_UP && RUN) {
-      stepTime = currentMillis - previousMillis;
-      if (stepTime >= Dt) {//Asigna un nuevo punto pasado un tiempo Dt
-        Serial.println(currentStep);
-        angles = getAngles(currentStep, currentScale, currentRotation, currentLeafts);
-        previousMillis = currentMillis;
-        currentStep++;
-        if (currentStep >= steps) currentStep = steps;//Vuelve a empezar
-        doc["a"] = input1;
-        doc["b"] = input2;
-        Serial.print(rad2Deg(angles[0]));
-        Serial.println(rad2Deg(angles[1]));
-        //Serializa el JSON a un string
-        String output;
-        serializeJson(doc, output);
-        //Imprime el JSON por el monitor serial
-        Serial.println(output);
-      }
+      previousMillis = currentMillis;
+      currentStep++;
+      if (currentStep >= steps) currentStep = steps;//Vuelve a empezar
+      doc["a"] = input1;
+      doc["b"] = input2;
+      Serial.print(rad2Deg(angles[0]));
+      Serial.print(", ");
+      Serial.println(rad2Deg(angles[1]));
+      //Serializa el JSON a un string
+      String output;
+      serializeJson(doc, output);
+      //Imprime el JSON por el monitor serial
+      Serial.println(output);
+    }
+    if (currentStep == 1) {
+      PID_SOFT(rad2Deg(angles[0]), rad2Deg(angles[1]));
+    } else if (currentStep >= 1) {
       PID(rad2Deg(angles[0]), rad2Deg(angles[1]));
     }
   }

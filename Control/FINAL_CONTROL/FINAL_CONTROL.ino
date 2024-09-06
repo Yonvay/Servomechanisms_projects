@@ -112,7 +112,7 @@ double rad2Deg(double angle) {
 }
 
 double* angles;
-long Dt = 500;
+long Dt = 5000;
 long previousMillis = 0;
 unsigned long currentMillis, stepTime;
 int currentStep = 0;
@@ -131,8 +131,8 @@ void loop() {
   if (!STOP_UP && digitalRead(HOME) == 1) {
     Serial.println("HOME");
     currentStep = 0;
-    PID1(90);
-    PID2(-90);
+    //PID1(90);
+    //PID2(-90);
   } else if (!STOP_UP && digitalRead(RUN) == 1) {
     stepTime = currentMillis - previousMillis;
     if (stepTime >= Dt) {  //Asigna un nuevo punto pasado un tiempo Dt
@@ -144,15 +144,11 @@ void loop() {
         currentStep = 0;
       };
       Serial.print("Theta_1T: ");
-      Serial.print(rad2Deg(angles[0]));
-      Serial.print(", Theta_1R: ");
-      Serial.println(input1);
+      Serial.println(rad2Deg(angles[0]));
       Serial.print("Theta_2T: ");
       Serial.print(rad2Deg(angles[1]));
-      Serial.print(", Theta_2R: ");
-      Serial.print(input2);
     }
-    PID1(rad2Deg(angles[0]));
-    PID2(rad2Deg(angles[1]));
+    //PID1(rad2Deg(angles[0]));
+    //PID2(rad2Deg(angles[1]));
   }
 }

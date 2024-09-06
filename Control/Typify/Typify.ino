@@ -8,8 +8,8 @@
 #define IN4 9
 
 AS5600 as5600;
-int sense = 0;
-float angle1, angle2;
+int sense = 0;  
+double angle1, angle2;
 long previousMillis = 0;
 
 void configMotor (int motor, int direction, float PWM) {
@@ -38,13 +38,13 @@ void setup() {
 }
 double lastPos = -1;
 void loop() {
-  configMotor(2, 1, 0);
+  configMotor(2, 1, 35);
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= 5) {
     previousMillis = currentMillis;
     //angle2= map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
-    angle1 = 23 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
-    angle2 = -406 + map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
+    angle1 = 40 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+    angle2 =  -142 + map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
     Serial.print(angle1);
     Serial.print(",");
     Serial.println(angle2);
