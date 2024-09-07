@@ -38,13 +38,14 @@ void setup() {
 }
 double lastPos = -1;
 void loop() {
-  configMotor(2, 1, 35);
+  configMotor(2, 1, 0);
+  configMotor(1, 0, 0);
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= 5) {
     previousMillis = currentMillis;
     //angle2= map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
-    angle1 = 40 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
-    angle2 =  -142 + map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
+    angle1 = 63 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+    angle2 =  -138 + map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
     Serial.print(angle1);
     Serial.print(",");
     Serial.println(angle2);

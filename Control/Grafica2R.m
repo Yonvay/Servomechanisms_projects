@@ -19,6 +19,9 @@ title('Mecanismo 2R');
 xlabel('X');
 ylabel('Y');
 
+t_values = linspace(0, 2*pi, 60);
+x = 1.33*1.47*(cos(3 * t_values + pi/4) + 5) .* cos(t_values) + 13;
+y = 1.33*1.47*(cos(3 * t_values + pi/4) + 5) .* sin(t_values) + 24.5;
 
 % Almacenar las coordenadas de los puntos extremos
 extreme_points_x = [];
@@ -60,8 +63,8 @@ while isRunning
             x0 = 0; y0 = 0; % Base del mecanismo
             x1 = l1 * cos(theta1_rad);
             y1 = l1 * sin(theta1_rad);
-            x2 = x1 + l2 * cos(theta1_rad + theta2_rad);
-            y2 = y1 + l2 * sin(theta1_rad + theta2_rad);
+            x2 = l1*cos(theta1_rad) + l2*cos(theta1_rad)*cos(theta2_rad) - l2*sin(theta1_rad)*sin(theta2_rad);
+            y2 = l1*sin(theta1_rad) + l2*cos(theta1_rad)*sin(theta2_rad) + l2*cos(theta2_rad)*sin(theta1_rad);
 
             % Guardar las coordenadas del punto extremo
             extreme_points_x = [extreme_points_x, x2];
@@ -74,6 +77,7 @@ while isRunning
             cla; % Limpiar la gráfica para actualizar el mecanismo
             plot([x0, x1], [y0, y1], 'ro-', 'LineWidth', 2); % Eslabón 1
             plot([x1, x2], [y1, y2], 'bo-', 'LineWidth', 2); % Eslabón 2
+            plot(x, y);
 
             % Graficar todos los puntos extremos acumulados como puntos (pixeles)
             plot(extreme_points_x, extreme_points_y, 'g.', 'MarkerSize', 10); % Puntos extremos acumulados como puntos
@@ -87,7 +91,7 @@ while isRunning
 end
 
 % Función de devolución de llamada para enviar JSON
-function sendJson(AInput,BInput, CInput)
+function sendJson(AInput, BInput, CInput)
     global s;
     Petalos = str2double(get(AInput, 'String')); 
     Escala = str2double(get(BInput, 'String'));

@@ -16,7 +16,7 @@ DynamicJsonDocument doc(capacity);
 AS5600 as5600;
 
 // Variables para PID
-double P1 = 7, D1 = 1.16, P2 = 10, D2 = 1.72;
+double P1 = 6, D1 = 1.04, P2 = 7, D2 = 1.36;
 double input1, input2;
 double output1, output2;
 double lastError1 = 0, lastError2 = 0;
@@ -39,8 +39,8 @@ void setup() {
   delay(1000);
 }
 
-double offsetAngle1 = 40;
-double offsetAngle2 = -147;
+double offsetAngle1 = 63;
+double offsetAngle2 = -138;
 
 void PID(double setPoint1, double setPoint2) {
   input1 = offsetAngle1 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
@@ -48,7 +48,7 @@ void PID(double setPoint1, double setPoint2) {
   double error1 = setPoint1 - input1;
   double error2 = setPoint2 - input2;
   output1 = P1 * error1 + D1 * (error1 - lastError1);
-  output2 = P2 * error2 + D2 * (error2 - lastError2);;
+  output2 = P2 * error2 + D2 * (error2 - lastError2);
   
   if (output1 > 0) {
     digitalWrite(IN1, LOW);
@@ -134,10 +134,11 @@ long Dt = 300;
 long previousMillis = 0;
 unsigned long currentMillis, stepTime;
 int currentStep = 0;
-double currentScale = 1.0;
+double currentScale = 1;
 double currentRotation = 0;//Radians
 int currentLeafts = 3;//Leafts > 3
-
+double lastT1 = 0;
+double lastT2 = 0;
 void loop() {
     // Si hay datos disponibles en el puerto serial
   if (Serial.available() > 0) {
@@ -153,10 +154,11 @@ void loop() {
       if (doc["ini"] == 1) {
         // Actualiza los valores 
         if (doc.containsKey("Petalos")) {
-          currentLeafts = doc["Petalos"];
+          currentLeafts = doc["Petalos"].as<double>();
         }
         if (doc.containsKey("Escala")) {
-          currentScale = doc["Escala"];
+          currentScale = doc["Escala"].as<double>();
+          steps = round(currentScale*60);
         }
         if (doc.containsKey("Rotacion")) {
           currentRotation = doc["Rotacion"].as<double>() * (PI / 180.0);
@@ -168,29 +170,34 @@ void loop() {
     }
   }
   currentMillis = millis();
-  Inicio = true;
+  
   if (Inicio) {
     stepTime = currentMillis - previousMillis;
-    if (stepTime >= Dt) {//Asigna un nuevo punto pasado un tiempo Dt
-      Serial.println(currentStep);
+    if (stepTime >= Dt) {//Asigna un nuevo punto pasado un tiempo Dt 
       angles = getAngles(currentStep, currentScale, currentRotation, currentLeafts);
       previousMillis = currentMillis;
-      currentStep++;
-      if (currentStep >= steps) currentStep = steps;//Vuelve a empezar
       doc["a"] = input1;
       doc["b"] = input2;
-      Serial.print(rad2Deg(angles[0]));
-      Serial.print(", ");
-      Serial.println(rad2Deg(angles[1]));
+      
       //Serializa el JSON a un string
       String output;
       serializeJson(doc, output);
       //Imprime el JSON por el monitor serial
-      Serial.println(output);
+      if (currentStep > 0) {
+        Serial.println(currentStep - 1);
+        Serial.print(lastT1);
+        Serial.print(", ");
+        Serial.println(lastT2);
+        Serial.println(output);
+      };
+      currentStep++;
+      if (currentStep >= steps) currentStep = steps;//Vuelve a empezar
+      lastT1 = rad2Deg(angles[0]);
+      lastT2 = rad2Deg(angles[1]);
     }
     if (currentStep == 1) {
       PID_SOFT(rad2Deg(angles[0]), rad2Deg(angles[1]));
-    } else if (currentStep >= 1) {
+    } else if (currentStep > 1) {
       PID(rad2Deg(angles[0]), rad2Deg(angles[1]));
     }
   }
