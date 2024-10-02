@@ -16,7 +16,7 @@ DynamicJsonDocument doc(capacity);
 AS5600 as5600;
 
 // Variables para PID
-double P1 = 6, D1 = 1.04, P2 = 7, D2 = 1.36;
+double P1 = 1.75, D1 = 0.29, P2 = 7, D2 = 0.01;
 double input1, input2;
 double output1, output2;
 double lastError1 = 0, lastError2 = 0;
@@ -39,12 +39,12 @@ void setup() {
   delay(1000);
 }
 
-double offsetAngle1 = 63;
-double offsetAngle2 = -138;
+double offsetAngle1 = 62;
+double offsetAngle2 = -69;
 
 void PID(double setPoint1, double setPoint2) {
-  input1 = offsetAngle1 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
-  input2 = offsetAngle2 + map(analogRead(ENCODER2), 0, 1023, 0, 360);// 10 Bits, analog output
+  input1 = offsetAngle1 + map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+  input2 = offsetAngle2 - map(analogRead(ENCODER2), 0, 1023, 0, 360);// 10 Bits, analog output
   double error1 = setPoint1 - input1;
   double error2 = setPoint2 - input2;
   output1 = P1 * error1 + D1 * (error1 - lastError1);

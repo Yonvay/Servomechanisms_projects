@@ -1,19 +1,19 @@
 #include "AS5600.h"
 
-#define PWM1 10
-#define PWM2 11
-#define IN1 8
-#define IN2 9
-#define IN3 12
-#define IN4 13
+#define IN1 12
+#define IN2 13
+#define PWM1 11
+#define PWM2 10
+#define IN3 8
+#define IN4 9
 
 AS5600 as5600;
 
 // Variables para PID
-double kp = 7, kd = 1.16;
-double setpoint = 90;
+double kp = 2.65, kd = 0.1;
+double setpoint = 40;
 double input, output;
-double lastError = 0, integral = 0;
+double lastError = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -31,7 +31,7 @@ void setup() {
 }
 
 void PID() {
-  long pos = 143 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+  long pos = 335 - map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
   input = pos;
   double error = setpoint - input;
   double Pout = kp * error;
@@ -39,17 +39,17 @@ void PID() {
   double Dout = kd * derivative;
   output = Pout + Dout;
   if (output > 0) {
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
   } else {
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
     output = -output;
   }
 
-  if (output > 255) output = 0;
+  if (output > 255) output = 255;
   if (output < 0) output = 0;
-  analogWrite(PWM1, output); // Enviar señal PWM al motor
+  analogWrite(PWM2, output); // Enviar señal PWM al motor
   lastError = error;
 
   Serial.print(input);

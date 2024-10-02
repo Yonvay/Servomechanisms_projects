@@ -14,8 +14,8 @@ long previousMillis = 0;
 
 void configMotor (int motor, int direction, float PWM) {
   if (motor == 1) {
-    digitalWrite(IN1, !direction);
-    digitalWrite(IN2, direction);
+    digitalWrite(IN1, !direction); //0
+    digitalWrite(IN2, direction); //1
     analogWrite(PWM1, PWM);
   } else {
     digitalWrite(IN3, !direction);
@@ -39,13 +39,13 @@ void setup() {
 double lastPos = -1;
 void loop() {
   configMotor(2, 1, 0);
-  configMotor(1, 0, 0);
+  configMotor(1, 1, 0);
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= 5) {
     previousMillis = currentMillis;
     //angle2= map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
-    angle1 = 63 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
-    angle2 =  -138 + map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
+    angle1 = 62 - map(as5600.getCumulativePosition(), 0, 4095, 0, 360); // 12 Bits
+    angle2 = -69 - map(analogRead(A0), 0, 1023, 0, 360); // 12 Bits
     Serial.print(angle1);
     Serial.print(",");
     Serial.println(angle2);
